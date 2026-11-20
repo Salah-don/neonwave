@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
+      <stop offset="0" stop-color="#0E1A33"/>
+      <stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <linearGradient id="wave" x1="0" x2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset=".5" stop-color="#00D4FF"/>
+      <stop offset="1" stop-color="#7DF9FF"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g filter="url(#glow)" fill="none" stroke="url(#wave)" stroke-linecap="round" stroke-width="26">
+    <path d="M86 256 C126 256 136 168 176 168 S226 344 266 344 S316 176 356 176 S406 256 426 256"/>
+  </g>
+  <g fill="#00D4FF" filter="url(#glow)" opacity=".9">
+    <rect x="118" y="352" width="18" height="40" rx="9"/>
+    <rect x="160" y="336" width="18" height="56" rx="9"/>
+    <rect x="334" y="336" width="18" height="56" rx="9"/>
+    <rect x="376" y="352" width="18" height="40" rx="9"/>
+  </g>
+</svg>

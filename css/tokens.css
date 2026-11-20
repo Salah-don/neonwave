@@ -1,0 +1,38 @@
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface-1: #0B0F1A;
+  --surface-2: #121826;
+  --surface-3: #1A2233;
+  --accent: #00D4FF;
+  --accent-2: #3B82F6;
+  --accent-soft: rgba(0, 212, 255, .14);
+  --text: #FFFFFF;
+  --text-2: #8B93A7;
+  --text-3: #596178;
+  --sep: rgba(139, 147, 167, .2);
+  --danger: #FF453A;
+  --glow: 0 0 14px rgba(0, 212, 255, .28);
+  --glow-text: 0 0 12px rgba(0, 212, 255, .38);
+  --glass: rgba(14, 19, 31, .74);
+  --glass-strong: rgba(18, 24, 38, .9);
+  --blur: saturate(180%) blur(22px);
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  --gutter: 20px;
+  --tabbar-h: 50px;
+  --mini-h: 62px;
+  --navbar-h: 44px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  --ease: cubic-bezier(.32, .72, 0, 1);      /* iOS sheet curve */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --spring: cubic-bezier(.34, 1.36, .64, 1);
+}
