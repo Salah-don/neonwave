@@ -58,8 +58,18 @@ async function run(j) {
   j.status = 'active';
   emit('download', { id: track.id });
   try {
-    // Stream URL is the real MP3 (CORS-enabled); `downloadable` still gates whether the artist allows it.
-    const blob = await fetchWithProgress(track.audioUrl || track.downloadUrl, j);
+    // Stream URL is the real MP3; `downloadable` still gates whether the artist allows it.
+    const src = track.audioUrl || track.downloadUrl;
+    let blob;
+    try {
+      blob = await fetchWithProgress(j.relay ? viaRelay(j.relay, src) : src, j);
+    } catch (e) {
+      // Jamendo omits CORS on some files: go through the user's relay (Réglages) when one is set.
+      const relay = !j.relay && e instanceof TypeError && navigator.onLine && !j.received && (await db.getKV('relayUrl', ''));
+      if (!relay) throw e;
+      j.relay = relay;
+      blob = await fetchWithProgress(viaRelay(relay, src), j);
+    }
     await db.putBlob(`audio:${track.id}`, blob);
     const hasArtBlob = await fetchArt(track);
     await saveTrack({ ...track, downloaded: true, inLibrary: true, hasArtBlob: hasArtBlob || track.hasArtBlob, downloadedAt: Date.now(), size: blob.size });
@@ -71,7 +81,7 @@ async function run(j) {
     const quota = e?.name === 'QuotaExceededError';
     // Online + TypeError before any byte = the file host refused CORS (Jamendo does this for some tracks): retrying won't help.
     const blocked = e instanceof TypeError && navigator.onLine && !j.received;
-    if (blocked) e.message = 'Jamendo bloque le téléchargement de ce titre (lecture en ligne possible)';
+    if (blocked) e.message = j.relay ? 'Le relais ne répond pas (vérifiez son adresse dans Réglages)' : 'Jamendo bloque ce titre — activez le relais dans Réglages';
     if (!quota && !blocked && j.attempts < MAX_ATTEMPTS && navigator.onLine) {
       j.status = 'waiting';
       emit('download', { id: track.id });
@@ -86,6 +96,14 @@ async function run(j) {
   } finally {
     pump();
   }
+}
+
+const viaRelay = (relay, url) => `${relay.replace(/\/+$/, '')}/?url=${encodeURIComponent(url)}`;
+
+/** Checks a relay URL: it must answer our CORS request with its "OK" text. */
+export async function testRelay(relay) {
+  const res = await fetch(relay.replace(/\/+$/, '') + '/', { signal: AbortSignal.timeout?.(10000) });
+  return res.ok && (await res.text()).includes('NeonWave relay OK');
 }
 
 async function fetchWithProgress(url, j) {

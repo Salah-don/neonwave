@@ -4,6 +4,7 @@ import { pageHeader, toast, confirmBox } from '../ui.js';
 import * as db from '../db.js';
 import * as jamendo from '../jamendo.js';
 import { clearHistory } from '../history.js';
+import { testRelay } from '../downloads.js';
 import { exportPlaylists } from './playlist.js';
 import { importBackupFlow, importFlow } from './library.js';
 import { refresh } from '../router.js';
@@ -11,8 +12,8 @@ import { APP_VERSION } from '../version.js';
 
 export async function settings(page) {
   pageHeader(page, { title: 'Réglages', showBack: true });
-  const [clientId, audioPath, est, persisted] = await Promise.all([
-    jamendo.getClientId(), db.getKV('audioPath', 'blob'),
+  const [clientId, relayUrl, audioPath, est, persisted] = await Promise.all([
+    jamendo.getClientId(), db.getKV('relayUrl', ''), db.getKV('audioPath', 'blob'),
     navigator.storage?.estimate?.().catch(() => null), navigator.storage?.persisted?.().catch(() => false),
   ]);
   const used = est?.usage || 0, quota = est?.quota || 0;
@@ -26,6 +27,11 @@ export async function settings(page) {
       <div class="field"><button class="link" data-test>Enregistrer et tester</button></div>
     </div>
     <p class="group-f">Gratuit sur devportal.jamendo.com → « Create an app ». Stocké uniquement sur cet appareil.</p>
+    <div class="group">
+      <label class="field"><span>Relais</span><input type="text" data-relay value="${esc(relayUrl)}" placeholder="https://….workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label>
+      <div class="field"><button class="link" data-relay-test>Enregistrer et tester le relais</button></div>
+    </div>
+    <p class="group-f">Facultatif. Permet de télécharger les titres Jamendo que leur serveur bloque (voir le README, « Relais Cloudflare »).</p>
 
     <h3 class="group-h">Stockage</h3>
     <div class="group">
@@ -60,6 +66,18 @@ export async function settings(page) {
     await jamendo.setClientId(cid.value);
     if (!cid.value.trim()) { toast('Client ID effacé'); return; }
     try { await jamendo.testClientId(); toast('Jamendo connecté'); } catch (e) { toast(e.message, 'xmark'); }
+  };
+  page.querySelector('[data-relay-test]').onclick = async () => {
+    const v = page.querySelector('[data-relay]').value.trim();
+    if (!v) { await db.setKV('relayUrl', ''); toast('Relais désactivé'); return; }
+    if (!/^https:\/\/[^\s/?#]+\/?$/.test(v)) { toast('Adresse invalide (ex. https://neonwave-relay.xxx.workers.dev)', 'xmark'); return; }
+    try {
+      if (!(await testRelay(v))) throw new Error();
+      await db.setKV('relayUrl', v);
+      toast('Relais connecté');
+    } catch {
+      toast('Le relais ne répond pas — vérifiez l\'adresse et le code du Worker', 'xmark');
+    }
   };
   page.querySelector('[data-persist]')?.addEventListener('click', async () => {
     const ok = await navigator.storage?.persist?.();

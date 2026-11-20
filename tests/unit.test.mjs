@@ -152,3 +152,33 @@ test('service worker: Range requests get 206 + Content-Range', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.headers.get('accept-ranges'), 'bytes');
 });
+
+test('cloudflare relay: Jamendo only, CORS headers, Range forwarded, no open proxy', async () => {
+  const relay = (await import('../tools/cloudflare-relay.js')).default;
+  const origin = { Origin: 'https://salah-don.github.io' };
+  const realFetch = globalThis.fetch;
+  let seen = null;
+  globalThis.fetch = async (url, init) => {
+    seen = { url, range: init.headers.Range };
+    const r = new Response('ID3abc', { status: 206, headers: { 'Content-Type': 'audio/mpeg', 'Content-Range': 'bytes 0-5/100', 'Set-Cookie': 'x=1' } });
+    Object.defineProperty(r, 'url', { value: url });
+    return r;
+  };
+  try {
+    const ok = await relay.fetch(new Request('https://r.dev/?url=' + encodeURIComponent('https://prod-1.storage.jamendo.com/?trackid=1&format=mp32'), { headers: { ...origin, Range: 'bytes=0-5' } }));
+    assert.equal(ok.status, 206);
+    assert.equal(ok.headers.get('access-control-allow-origin'), 'https://salah-don.github.io');
+    assert.equal(ok.headers.get('content-range'), 'bytes 0-5/100');
+    assert.equal(ok.headers.get('set-cookie'), null, 'upstream cookies are not forwarded');
+    assert.equal(seen.range, 'bytes=0-5');
+    for (const bad of ['https://evil.com/x', 'http://prod-1.storage.jamendo.com/', 'https://jamendo.com.evil.com/', 'file:///etc/passwd']) {
+      const r = await relay.fetch(new Request('https://r.dev/?url=' + encodeURIComponent(bad), { headers: origin }));
+      assert.equal(r.status, 403, bad);
+    }
+    const ping = await relay.fetch(new Request('https://r.dev/', { headers: origin }));
+    assert.equal(await ping.text(), 'NeonWave relay OK');
+    assert.equal((await relay.fetch(new Request('https://r.dev/', { method: 'OPTIONS', headers: origin }))).status, 204);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

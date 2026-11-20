@@ -25,6 +25,18 @@ npm start            # http://localhost:8080
 
 Le client_id reste uniquement sur l'appareil (IndexedDB) ; il n'est jamais écrit dans le code.
 
+## Relais Cloudflare (facultatif)
+Les serveurs de Jamendo n'envoient pas l'en-tête CORS pour certains fichiers. Une app web ne peut donc pas les télécharger pour l'écoute hors-ligne (la lecture en ligne marche toujours). Le relais ajoute cet en-tête.
+Il accepte uniquement les fichiers Jamendo, uniquement pour ce site : ce n'est pas un proxy ouvert.
+
+1. Créez un compte gratuit sur https://dash.cloudflare.com.
+2. *Compute (Workers)* → *Workers & Pages* → *Create* → *Start with Hello World* → nom `neonwave-relay` → *Deploy*.
+3. *Edit code* → remplacez tout le code par le contenu de [`tools/cloudflare-relay.js`](tools/cloudflare-relay.js) → *Deploy*.
+4. Copiez l'adresse du Worker (`https://neonwave-relay.<votre-nom>.workers.dev`).
+5. Dans NeonWave : Réglages → *Relais* → collez l'adresse → « Enregistrer et tester le relais ».
+
+Le relais n'est utilisé que pour les titres que Jamendo bloque. Le plan gratuit de Cloudflare permet 100 000 requêtes par jour.
+
 ## Tests
 ```bash
 npm install
