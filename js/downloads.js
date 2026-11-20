@@ -110,6 +110,7 @@ async function fetchWithProgress(url, j) {
   // Resume where the previous attempt stopped when the server honours Range.
   const headers = j.received ? { Range: `bytes=${j.received}-` } : {};
   const res = await fetch(url, { headers });
+  if (res.status === 404) throw new Error('Fichier introuvable chez Jamendo');
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   if (j.received && res.status !== 206) { j.chunks = []; j.received = 0; }
   const type = res.headers.get('content-type')?.split(';')[0] || 'audio/mpeg';
