@@ -23,7 +23,7 @@ body.has-mini .views { padding-bottom: calc(var(--tabbar-h) + var(--sab) + var(-
   border-bottom: .5px solid transparent;
 }
 .navbar.scrolled { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-bottom-color: var(--sep); }
-.nav-title { font-weight: 600; font-size: 17px; opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .2s; max-width: 56vw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.nav-title { font-weight: 600; font-size: 17px; opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .2s; max-width: 44vw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .navbar.scrolled .nav-title { opacity: 1; transform: none; }
 .nav-left { display: flex; justify-content: flex-start; min-width: 0; }
 .nav-right { display: flex; justify-content: flex-end; gap: 4px; }

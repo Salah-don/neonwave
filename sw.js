@@ -20,8 +20,8 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
+    // No clients.claim(): the SW takes over from the next launch (keeps first-load behaviour simple and testable).
     for (const k of await caches.keys()) if (k.startsWith('nw-shell-') && k !== SHELL_CACHE) await caches.delete(k);
-    await self.clients.claim();
   })());
 });
 
@@ -42,7 +42,11 @@ async function getBlob(id) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const r = db.transaction('blobs').objectStore('blobs').get(id);
-    r.onsuccess = () => { resolve(r.result?.blob || null); db.close(); };
+    r.onsuccess = () => {
+      const row = r.result;
+      resolve(row?.blob || (row?.buf ? new Blob([row.buf], { type: row.type || 'audio/mpeg' }) : null));
+      db.close();
+    };
     r.onerror = () => { reject(r.error); db.close(); };
   });
 }

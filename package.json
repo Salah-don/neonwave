@@ -1,0 +1,15 @@
+{
+  "name": "neonwave",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs 8080",
+    "test": "node --test tests/unit.test.mjs && playwright test",
+    "test:unit": "node --test tests/unit.test.mjs",
+    "test:e2e": "playwright test",
+    "bump": "node tools/bump-version.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

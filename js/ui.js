@@ -22,11 +22,16 @@ export function pageHeader(page, { title, large = true, actions = '', showBack =
     watch = html(`<h1 class="large-title">${esc(title)}</h1>`);
     head.after(watch);
   }
-  if (watch) {
-    const io = new IntersectionObserver(([en]) => head.classList.toggle('scrolled', !en.isIntersecting), { rootMargin: `-${44 + 50}px 0px 0px 0px` });
-    requestAnimationFrame(() => watch.isConnected && io.observe(watch));
-  } else head.classList.add('scrolled');
+  if (watch) watchTitle(head, watch);
   return head;
+}
+
+/** Show the nav-bar title once `el` scrolls under it. Waits until `el` is in the document (pages render off-DOM on refresh). */
+export function watchTitle(head, el) {
+  const io = new IntersectionObserver(([en]) => head.classList.toggle('scrolled', !en.isIntersecting), { rootMargin: '-94px 0px 0px 0px' });
+  let tries = 0;
+  const start = () => { if (el.isConnected) io.observe(el); else if (tries++ < 120) requestAnimationFrame(start); };
+  start();
 }
 
 /* ---------------- toast ---------------- */

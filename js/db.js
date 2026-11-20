@@ -54,5 +54,17 @@ export async function getKV(key, fallback) {
 }
 export const setKV = (key, value) => put('kv', { key, value });
 
-export async function getBlob(id) { return (await get('blobs', id))?.blob ?? null; }
-export const putBlob = (id, blob) => put('blobs', { id, blob });
+// Some WebKit builds refuse Blob values in IndexedDB; fall back to { buf, type } (read back as a Blob).
+export async function getBlob(id) {
+  const row = await get('blobs', id);
+  if (!row) return null;
+  return row.blob ?? (row.buf ? new Blob([row.buf], { type: row.type || '' }) : null);
+}
+export async function putBlob(id, blob) {
+  try {
+    await put('blobs', { id, blob });
+  } catch (e) {
+    if (e?.name === 'QuotaExceededError') throw e;
+    await put('blobs', { id, buf: await blob.arrayBuffer(), type: blob.type });
+  }
+}

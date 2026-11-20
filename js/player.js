@@ -164,7 +164,7 @@ function trackListen() {
   const t = audio.currentTime;
   const dt = t - lastTime;
   lastTime = t;
-  if (audio.paused || dt <= 0 || dt > 3 || !listenTrack) return;
+  if (audio.paused || dt <= 0 || dt > 3 * (audio.playbackRate || 1) || !listenTrack) return; // larger jumps are seeks
   listened += dt;
   if (listened >= LISTEN_THRESHOLD && histId === null) {
     histId = 'pending';
@@ -255,6 +255,18 @@ audio.addEventListener('ended', () => {
 });
 audio.addEventListener('error', () => {
   if (!audio.src) return;
+  const t = queue.current;
+  // Blob URL refused by this engine → retry the same downloaded file through the SW Range (206) path.
+  if (audio.src.startsWith('blob:') && t && navigator.serviceWorker?.controller) {
+    const pos = audio.currentTime || 0;
+    if (currentUrl) { URL.revokeObjectURL(currentUrl); currentUrl = null; }
+    audio.src = `offline-audio/${encodeURIComponent(t.id)}`;
+    if (pos > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = pos; }, { once: true });
+    playSafe();
+    // Remember what works on this device, and re-resolve the preloaded next track accordingly.
+    db.setKV('audioPath', 'sw').then(() => { dropPrepared(); prepareNext(); }).catch(() => {});
+    return;
+  }
   toast('Lecture impossible', 'xmark');
   emit('state');
 });

@@ -1,6 +1,6 @@
 // Playlist detail: cover, play/shuffle, sort, edit mode (reorder/remove), download, auto-download, export…
 import { esc, icon, on, plural, uid } from '../util.js';
-import { pageHeader, hydrate, playlistArtHTML, actionMenu, toast, confirmBox, sheet, pickFiles } from '../ui.js';
+import { pageHeader, watchTitle, hydrate, playlistArtHTML, actionMenu, toast, confirmBox, sheet, pickFiles } from '../ui.js';
 import * as playlists from '../playlists.js';
 import * as downloads from '../downloads.js';
 import { sortable, swipeToDelete } from '../gestures.js';
@@ -25,14 +25,13 @@ export async function playlistView(page, { id }) {
   const body = document.createElement('div');
   body.innerHTML = `<div class="hero"><button class="hero-art tap" data-cover aria-label="Changer l'image">${playlistArtHTML(p, all)}</button>
       <h2>${esc(p.name)}</h2>${p.description ? `<p class="hero-desc">${esc(p.description)}</p>` : ''}
-      <div class="hero-meta">${SORT_LABELS[p.sort || 'custom']}${p.autoDownload ? ' · Téléchargement auto' : ''}</div>
+      ${p.autoDownload ? '<div class="hero-meta">Téléchargement auto</div>' : ''}
       <div class="hero-actions"><button class="pill" data-play ${tracks.length ? '' : 'disabled'}>${icon('play')}Lecture</button><button class="pill" data-shuffle ${tracks.length ? '' : 'disabled'}>${icon('shuffle')}Aléatoire</button></div></div>
     ${tracks.length ? trackListHTML(tracks, { showAlbum: false }) : `<div class="empty">${icon('playlist')}<h3>Playlist vide</h3><p>Touchez « … » sur un titre › Ajouter à une playlist.</p></div>`}
     ${tracks.length ? `<p class="list-foot">${plural(tracks.length, 'titre', 'titres')}, ${fmtTotal(totalDuration(tracks))}</p>` : ''}`;
   page.append(body);
   hydrate(body);
-  const io = new IntersectionObserver(([en]) => head.classList.toggle('scrolled', !en.isIntersecting), { rootMargin: '-94px 0px 0px 0px' });
-  io.observe(body.querySelector('.hero h2'));
+  watchTitle(head, body.querySelector('.hero h2'));
 
   body.querySelector('[data-play]').onclick = () => playList(tracks, 0, p.name);
   body.querySelector('[data-shuffle]').onclick = () => playList(tracks, -1, p.name, { shuffle: true });

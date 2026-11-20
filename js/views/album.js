@@ -1,6 +1,6 @@
 // Album and artist detail pages (local library or Jamendo).
 import { esc, icon, on, plural } from '../util.js';
-import { pageHeader, hydrate, artHTML, skeletonRows, toast } from '../ui.js';
+import { pageHeader, watchTitle, hydrate, artHTML, skeletonRows, toast } from '../ui.js';
 import { libraryTracks, groupAlbums } from '../library.js';
 import * as jamendo from '../jamendo.js';
 import * as downloads from '../downloads.js';
@@ -62,8 +62,7 @@ export async function albumView(page, { id }) {
     meta: [tracks[0]?.genre, year].filter(Boolean).join(' · '),
   }) + trackListHTML(tracks, { numbered: true, sub: '' }) + `<p class="list-foot">${plural(tracks.length, 'titre', 'titres')}, ${fmtTotal(totalDuration(tracks))}</p>`;
   // hero-art is the sentinel: nav title fades in once it scrolls away
-  const io = new IntersectionObserver(([en]) => head.classList.toggle('scrolled', !en.isIntersecting), { rootMargin: '-94px 0px 0px 0px' });
-  io.observe(body.querySelector('.hero h2'));
+  watchTitle(head, body.querySelector('.hero h2'));
   hydrate(body);
   wireHero(body, tracks, album.title);
   navActions(head, tracks);
@@ -92,8 +91,7 @@ export async function artistView(page, { id }) {
     + (top.length ? `<section class="sec"><h2 class="sec-h">Titres populaires</h2>${trackListHTML(top.slice(0, 30), { showAlbum: true })}</section>` : '')
     + (albums.length ? `<section class="sec"><h2 class="sec-h">Albums</h2><div class="shelf">${albums.map(albumCard).join('')}</div></section>` : '')
     + (note ? `<p class="list-foot">${esc(note)}</p>` : '');
-  const io = new IntersectionObserver(([en]) => head.classList.toggle('scrolled', !en.isIntersecting), { rootMargin: '-94px 0px 0px 0px' });
-  io.observe(body.querySelector('.hero h2'));
+  watchTitle(head, body.querySelector('.hero h2'));
   hydrate(body);
   const list = top.slice(0, 30);
   wireHero(body, list, info.name);

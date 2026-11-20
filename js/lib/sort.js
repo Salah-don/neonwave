@@ -62,7 +62,7 @@ export function fmtTime(s) {
 }
 
 export function fmtTotal(seconds) {
-  const m = Math.round(seconds / 60);
+  const m = seconds > 0 ? Math.max(1, Math.round(seconds / 60)) : 0;
   if (m < 60) return `${m} min`;
   return `${Math.floor(m / 60)} h ${m % 60} min`;
 }

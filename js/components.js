@@ -77,10 +77,12 @@ on('state', () => document.body.classList.toggle('paused-all', !player.isPlaying
 on('download-progress', ({ id, progress }) => {
   $$(`[data-dl="${CSS.escape(id)}"]`).forEach((el) => { el.classList.remove('queued'); el.style.setProperty('--p', progress); });
 });
-on('download', ({ id }) => {
+on('download', ({ id, done }) => {
   const j = downloads.job(id);
   $$(`.track[data-id="${CSS.escape(id)}"] .row-main`).forEach((main) => {
     main.querySelector('.dl-ring')?.remove();
+    const sub = main.querySelector('.meta .s');
+    if (done && sub && !sub.querySelector('.dl-mark')) sub.insertAdjacentHTML('afterbegin', icon('downloaded', 'dl-mark'));
     if (j && j.status !== 'failed') main.querySelector('.meta').insertAdjacentHTML('afterend', `<span class="dl-ring ${j.status === 'active' ? '' : 'queued'}" data-dl="${esc(id)}" style="--p:${j.progress || 0}"></span>`);
   });
 });

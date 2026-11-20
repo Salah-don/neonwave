@@ -39,6 +39,7 @@
   box-shadow: 0 28px 60px rgba(0, 0, 0, .55), 0 10px 60px var(--np-shadow);
   transition: transform .55s var(--spring), box-shadow .55s ease;
 }
+.np-art:not([src]), .np-compact img:not([src]), .mini-art:not([src]) { background: var(--surface-3) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23596178%27 stroke-width=%272%27%3E%3Cpath d=%27M9 18V6.2l11-2.4v11.7%27/%3E%3Ccircle cx=%276.5%27 cy=%2718%27 r=%272.5%27/%3E%3Ccircle cx=%2717.5%27 cy=%2715.5%27 r=%272.5%27/%3E%3C/svg%3E") center / 40% no-repeat; }
 .np.paused .np-art { transform: scale(.8); box-shadow: 0 14px 30px rgba(0, 0, 0, .4), 0 6px 30px var(--np-shadow); }
 
 .np-panel { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: none; touch-action: pan-y; }
