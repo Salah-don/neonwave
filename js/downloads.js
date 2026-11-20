@@ -58,7 +58,8 @@ async function run(j) {
   j.status = 'active';
   emit('download', { id: track.id });
   try {
-    const blob = await fetchWithProgress(track.downloadUrl || track.audioUrl, j);
+    // Stream URL is the real MP3 (CORS-enabled); `downloadable` still gates whether the artist allows it.
+    const blob = await fetchWithProgress(track.audioUrl || track.downloadUrl, j);
     await db.putBlob(`audio:${track.id}`, blob);
     const hasArtBlob = await fetchArt(track);
     await saveTrack({ ...track, downloaded: true, inLibrary: true, hasArtBlob: hasArtBlob || track.hasArtBlob, downloadedAt: Date.now(), size: blob.size });
@@ -91,6 +92,8 @@ async function fetchWithProgress(url, j) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   if (j.received && res.status !== 206) { j.chunks = []; j.received = 0; }
   const type = res.headers.get('content-type')?.split(';')[0] || 'audio/mpeg';
+  // Never store an HTML/error page as a "song" (Jamendo's audiodownload link returns a web page).
+  if (!/^audio\/|^application\/octet-stream$/.test(type)) throw new Error('Le serveur n\'a pas renvoyé de fichier audio');
   const total = Number(res.headers.get('content-length') || 0) + j.received;
   if (!res.body?.getReader) {
     const b = await res.blob();
