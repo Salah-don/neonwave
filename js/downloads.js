@@ -69,7 +69,10 @@ async function run(j) {
   } catch (e) {
     j.attempts++;
     const quota = e?.name === 'QuotaExceededError';
-    if (!quota && j.attempts < MAX_ATTEMPTS && navigator.onLine) {
+    // Online + TypeError before any byte = the file host refused CORS (Jamendo does this for some tracks): retrying won't help.
+    const blocked = e instanceof TypeError && navigator.onLine && !j.received;
+    if (blocked) e.message = 'Jamendo bloque le téléchargement de ce titre (lecture en ligne possible)';
+    if (!quota && !blocked && j.attempts < MAX_ATTEMPTS && navigator.onLine) {
       j.status = 'waiting';
       emit('download', { id: track.id });
       await sleep(1000 * 2 ** j.attempts);
